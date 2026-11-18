@@ -1,0 +1,256 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Das Geheimnis des O/24/1 Kurses</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;min-height:100vh;color:#f7edcf;
+ background:radial-gradient(ellipse at top,#1c3929,#07100b 65%);
+ font-family:Georgia,serif;text-align:center;overflow-x:hidden;
+}
+#snow{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.flake{position:absolute;top:-20px;color:white;animation:fall linear infinite;opacity:.55}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+main{position:relative;max-width:850px;margin:auto;padding:55px 20px}
+h1{font-size:clamp(35px,7vw,65px);font-weight:normal;color:#e6c77d;text-shadow:0 0 25px #d6ae5555}
+.subtitle{letter-spacing:3px;color:#b9b5a5;font-size:12px}
+.panel{
+ margin-top:35px;padding:35px 20px;
+ border:1px solid #a98b4e;border-radius:18px;
+ background:#0c1b13ed;box-shadow:0 20px 70px #0008;
+}
+h2{font-weight:normal;color:#e6c77d}
+.gift{font-size:90px;margin:25px;animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-12px) rotate(4deg)}}
+button{
+ background:linear-gradient(135deg,#e8cf91,#a9813e);
+ border:0;border-radius:30px;padding:15px 25px;
+ color:#152016;font-weight:bold;cursor:pointer;margin:8px;
+ letter-spacing:1px;transition:.2s;
+}
+button:hover{filter:brightness(1.15);transform:translateY(-2px)}
+button:disabled{opacity:.4;cursor:not-allowed}
+.secondary{background:transparent;color:#e6c77d;border:1px solid #a98b4e}
+#status{color:#e6c77d;min-height:25px;margin:20px}
+.bigName{font-size:clamp(32px,7vw,55px);color:#f1d58e;margin:20px 0}
+.reveal{animation:reveal .8s ease both}
+@keyframes reveal{from{opacity:0;transform:scale(.75)}to{opacity:1;transform:scale(1)}}
+#recipient{display:none}
+#final{display:none;margin-top:35px}
+table{width:100%;border-collapse:collapse;font:14px Arial,sans-serif;margin-top:20px}
+td,th{padding:13px;border-bottom:1px solid #a98b4e55;text-align:left}
+th{color:#d9b86f;font-size:11px}
+td:last-child{color:#e6c77d;font-weight:bold}
+.note{color:#aaa;font:12px Arial,sans-serif;line-height:1.6;margin-top:25px}
+.progress{height:5px;background:#26352a;border-radius:9px;margin:20px auto;max-width:400px;overflow:hidden}
+#bar{height:100%;width:0;background:#d9b86f;transition:width .4s}
+</style>
+</head>
+
+<body>
+<div id="snow"></div>
+
+<main>
+ <div class="subtitle">✦ THE CHRISTMAS EDITION ✦</div>
+ <h1>Das Geheimnis des<br>O/24/1 Kurses</h1>
+ <p class="subtitle">17 NAMEN. 17 GEHEIMNISSE. EIN WEIHNACHTSFEST.</p>
+
+ <section class="panel">
+
+  <div id="start">
+   <h2>Die große Wichtelziehung</h2>
+   <p class="subtitle">Ein kleines Geheimnis wartet auf euch ...</p>
+   <div class="gift">🎁</div>
+   <p>Bereit für die magische Ziehung?</p>
+   <button id="startBtn">✦ WICHTELZIEHUNG STARTEN ✦</button>
+  </div>
+
+  <div id="game" style="display:none">
+   <p class="subtitle" id="counter">TEILNEHMER 1 VON 17</p>
+   <div class="progress"><div id="bar"></div></div>
+   <h2>Jetzt wird es spannend ...</h2>
+   <div class="gift" id="gift">🎁</div>
+   <div class="bigName" id="giver"></div>
+   <div id="status">Bereit zum Aufdecken?</div>
+
+   <div id="recipient" class="reveal">
+    <p class="subtitle">DEIN WICHTEL IST</p>
+    <div class="bigName" id="receiver"></div>
+    <p>🤫 Pssst! Das bleibt dein Geheimnis.</p>
+   </div>
+
+   <button id="revealBtn">GESCHENK ÖFFNEN</button>
+   <button id="nextBtn" style="display:none">NÄCHSTER WICHTEL →</button>
+  </div>
+
+  <div id="final">
+   <div class="gift">🏆</div>
+   <h2 class="bigName">Die goldene Wichtelliste</h2>
+   <p class="subtitle">ALLE GEHEIMNISSE SIND GELÜFTET</p>
+   <table>
+    <thead><tr><th>NR.</th><th>WICHTEL</th><th>BESCHENKT</th></tr></thead>
+    <tbody id="list"></tbody>
+   </table>
+   <button id="download">LISTE HERUNTERLADEN</button>
+   <button class="secondary" id="restart">NEU STARTEN</button>
+  </div>
+
+  <p class="note">Die vollständige Liste erscheint erst nach der letzten Ziehung.</p>
+ </section>
+</main>
+
+<script>
+const names=[
+"Mert","Fehmi","Sophia","Bianca","Fabienne",
+"Ayse Gül","Fatma","Alina","Hatice","Melissa",
+"Annika","Jessi","Franzi","Anna Leena","Chiara",
+"Ksyeniya","Björn"
+];
+
+let pairs=[],index=0,revealed=false;
+
+function shuffle(){
+ let a=[...names];
+ for(let i=a.length-1;i>0;i--){
+  let j=Math.floor(Math.random()*(i+1));
+  [a[i],a[j]]=[a[j],a[i]];
+ }
+ return a;
+}
+
+function createPairs(){
+ let a;
+ do{a=shuffle()}
+ while(a.some((name,i)=>name===names[i]));
+ return names.map((giver,i)=>({giver,receiver:a[i]}));
+}
+
+function escapeHTML(s){
+ return s.replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",
+  '"':"&quot;","'":"&#39;"
+ }[c]));
+}
+
+function start(){
+ pairs=createPairs();
+ index=0;
+ revealed=false;
+ document.getElementById("start").style.display="none";
+ document.getElementById("final").style.display="none";
+ document.getElementById("game").style.display="block";
+ showPerson();
+}
+
+function showPerson(){
+ revealed=false;
+ const p=pairs[index];
+
+ document.getElementById("counter").textContent=
+  `TEILNEHMER ${index+1} VON ${names.length}`;
+
+ document.getElementById("bar").style.width=
+  ((index/names.length)*100)+"%";
+
+ document.getElementById("giver").textContent=p.giver;
+ document.getElementById("recipient").style.display="none";
+ document.getElementById("receiver").textContent=p.receiver;
+ document.getElementById("gift").textContent="🎁";
+
+ document.getElementById("status").textContent=
+  "Wer ist dein Wichtel? Finde es heraus!";
+
+ document.getElementById("revealBtn").style.display="inline-block";
+ document.getElementById("nextBtn").style.display="none";
+}
+
+function reveal(){
+ if(revealed)return;
+ revealed=true;
+
+ const gift=document.getElementById("gift");
+ gift.textContent="✨";
+ document.getElementById("status").textContent="Trommelwirbel ...";
+ document.getElementById("revealBtn").disabled=true;
+
+ setTimeout(()=>{
+  document.getElementById("recipient").style.display="block";
+  document.getElementById("recipient").classList.remove("reveal");
+  void document.getElementById("recipient").offsetWidth;
+  document.getElementById("recipient").classList.add("reveal");
+
+  gift.textContent="🎉";
+  document.getElementById("status").textContent="Dein Wichtel wurde enthüllt!";
+
+  document.getElementById("revealBtn").style.display="none";
+  document.getElementById("revealBtn").disabled=false;
+  document.getElementById("nextBtn").style.display="inline-block";
+ },900);
+}
+
+function next(){
+ index++;
+ if(index>=names.length){
+  showFinal();
+  return;
+ }
+ showPerson();
+}
+
+function showFinal(){
+ document.getElementById("game").style.display="none";
+ document.getElementById("final").style.display="block";
+ document.getElementById("bar").style.width="100%";
+
+ document.getElementById("list").innerHTML=pairs.map((p,i)=>`
+ <tr>
+ <td>${i+1}</td>
+ <td>${escapeHTML(p.giver)}</td>
+ <td>${escapeHTML(p.receiver)}</td>
+ </tr>`).join("");
+}
+
+function download(){
+ const csv="Wichtel;Beschenkt\n"+
+ pairs.map(p=>p.giver+";"+p.receiver).join("\n");
+
+ const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;
+ a.download="Wichtelliste-O241.csv";
+ a.click();
+ URL.revokeObjectURL(url);
+}
+
+document.getElementById("startBtn").onclick=start;
+document.getElementById("revealBtn").onclick=reveal;
+document.getElementById("nextBtn").onclick=next;
+document.getElementById("download").onclick=download;
+
+document.getElementById("restart").onclick=()=>{
+ document.getElementById("final").style.display="none";
+ document.getElementById("start").style.display="block";
+ document.getElementById("bar").style.width="0";
+ pairs=[];
+ index=0;
+};
+
+for(let i=0;i<45;i++){
+ const f=document.createElement("span");
+ f.className="flake";
+ f.textContent="❄";
+ f.style.left=Math.random()*100+"%";
+ f.style.animationDuration=(7+Math.random()*14)+"s";
+ f.style.animationDelay=(-Math.random()*20)+"s";
+ f.style.fontSize=(8+Math.random()*12)+"px";
+ document.getElementById("snow").appendChild(f);
+}
+</script>
+</body>
+</html>
